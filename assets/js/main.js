@@ -1,9 +1,17 @@
 /* =========================================================
-   CONFIGURAÇÃO — edite aqui o WhatsApp
+   CONFIGURAÇÃO — edite aqui WhatsApp e Google Ads
    ========================================================= */
 const SITE = {
     whatsapp: '5541920073911', // DDI + DDD + número, só dígitos — (41) 92007-3911
     mensagem: 'Olá, Sophia! Gostaria de agendar uma conversa.',
+
+    // Google Ads: deixe vazio para desligar. Preencha com os dados do painel
+    // (Metas > Conversões > Configurar tag > "Instalar a tag você mesmo").
+    googleAds: {
+        id: '',                // ex.: 'AW-123456789'
+        conversaoWhatsapp: '', // rótulo da conversão do clique no WhatsApp, ex.: 'AbC-D_efG-h12_34-567'
+        conversaoTelefone: '', // (opcional) rótulo da conversão do clique no telefone
+    },
 };
 
 (() => {
@@ -11,6 +19,29 @@ const SITE = {
 
     const doc = document;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------- Google Ads (gtag.js) ----------
+       Só carrega se SITE.googleAds.id estiver preenchido. */
+    const ads = SITE.googleAds;
+    const adsOn = /^AW-\d+$/.test(ads.id);
+
+    if (adsOn) {
+        const tag = doc.createElement('script');
+        tag.async = true;
+        tag.src = `https://www.googletagmanager.com/gtag/js?id=${ads.id}`;
+        doc.head.appendChild(tag);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function gtag() { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', ads.id);
+    }
+
+    const trackConversion = (label) => {
+        if (adsOn && label) {
+            window.gtag('event', 'conversion', { send_to: `${ads.id}/${label}` });
+        }
+    };
 
     /* ---------- Links de WhatsApp ----------
        Qualquer <a data-whatsapp> vira link do WhatsApp.
@@ -20,6 +51,12 @@ const SITE = {
         link.href = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(message)}`;
         link.target = '_blank';
         link.rel = 'noopener';
+        link.addEventListener('click', () => trackConversion(ads.conversaoWhatsapp));
+    });
+
+    /* ---------- Links de telefone ---------- */
+    doc.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+        link.addEventListener('click', () => trackConversion(ads.conversaoTelefone));
     });
 
     /* ---------- Ano no rodapé ---------- */

@@ -12,3 +12,4 @@ Coloque aqui as fotos finais. No `index.html`, cada espaço reservado tem um com
 Já existem aqui:
 - `favicon.svg`: ícone da aba.
 - `sun-pattern.svg`: padrão de sóis do fundo da seção Pilares.
+- `share.jpg` (1200×630): imagem da pré-visualização do link no WhatsApp/Facebook (`og:image`).
